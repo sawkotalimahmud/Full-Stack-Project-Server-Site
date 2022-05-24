@@ -17,7 +17,13 @@ console.log(uri);
 async function run (){
   try{
     await client.connect();
-    console.log('database cannected');
+    const productsCollection = client.db("assignment-12").collection("products");
+    app.get('/products', async (req, res) => {
+      const query = {};
+      const cursor = productsCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    })
   }
   finally{
 
