@@ -18,6 +18,7 @@ async function run (){
   try{
     await client.connect();
     const productsCollection = client.db("assignment-12").collection("products");
+    const ordersCollection = client.db("assignment-12").collection("orders");
 
     // All Products Api
     app.get('/products', async (req, res) => {
@@ -34,6 +35,19 @@ async function run (){
       const product = await productsCollection.findOne(query);
       res.send(product);
     });
+
+    // Orders Product
+    // app.post('/orders', async (res, req) => {
+    //   const orders = req.body;
+    //   const result = await ordersCollection.insertOne(orders);
+    //   res.send(result);
+    // });
+
+    app.post('/orders', async (req, res) => {
+      const orders = req.body;
+      const result = await ordersCollection.insertOne(orders);
+      res.send(result)
+  })
   }
   finally{
 
