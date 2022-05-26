@@ -36,18 +36,20 @@ async function run (){
       res.send(product);
     });
 
-    // Orders Product
-    // app.post('/orders', async (res, req) => {
-    //   const orders = req.body;
-    //   const result = await ordersCollection.insertOne(orders);
-    //   res.send(result);
-    // });
+    app.get('/orders', async (req, res) => {
+      const orderer = req.query.ordererEmail;
+      const query = {orderer: orderer};
+      const result = await ordersCollection.find(query).toArray();
+      res.send(result);
 
+    })
+
+    // Get All Orders
     app.post('/orders', async (req, res) => {
       const orders = req.body;
       const result = await ordersCollection.insertOne(orders);
       res.send(result)
-  })
+  });
   }
   finally{
 
