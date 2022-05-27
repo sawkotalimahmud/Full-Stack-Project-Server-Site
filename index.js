@@ -34,7 +34,7 @@ async function run (){
     app.get('/user', async (req, res) => {
       const users= await usersCollection.find().toArray();
       res.send(users);
-    })
+    });
 
     // Get users Collection
     app.put('/user/:email', async (req, res) => {
@@ -48,7 +48,18 @@ async function run (){
       const result = await usersCollection.updateOne(filter, updateDoc, option);
       const token = jwt.sign({email: email}, process.env.ACCESS_TOKEN_SECRET)
       res.send({result, token});
-    })
+    });
+
+    // Make Admin Api
+    app.put('/user/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = {email: email};
+      const updateDoc = {
+        $set: {role: 'admin'},
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
     // Get Single Product
     app.get("/products/:id", async (req, res) => {
@@ -64,8 +75,7 @@ async function run (){
       const query = {orderer: orderer};
       const result = await ordersCollection.find(query).toArray();
       res.send(result);
-
-    })
+    });
 
     // Post All Orders
     app.post('/orders', async (req, res) => {
