@@ -19,6 +19,7 @@ async function run (){
     await client.connect();
     const productsCollection = client.db("assignment-12").collection("products");
     const ordersCollection = client.db("assignment-12").collection("orders");
+    const usersCollection = client.db("assignment-12").collection("users");
 
     // All Products Api
     app.get('/products', async (req, res) => {
@@ -27,6 +28,19 @@ async function run (){
       const products = await cursor.toArray();
       res.send(products);
     });
+
+    // Get All users Collection
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = {email: email};
+      const option = {upsert: true};
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    })
 
     // Get Single Product
     app.get("/products/:id", async (req, res) => {
