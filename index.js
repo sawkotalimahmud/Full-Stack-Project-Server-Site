@@ -36,6 +36,7 @@ async function run (){
     const productsCollection = client.db("assignment-12").collection("products");
     const ordersCollection = client.db("assignment-12").collection("orders");
     const usersCollection = client.db("assignment-12").collection("users");
+    const newProductCollection = client.db("assignment-12").collection("newProduct");
 
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
@@ -102,6 +103,19 @@ async function run (){
       const product = await productsCollection.findOne(query);
       res.send(product);
     });
+
+    // Add Product API
+    app.post('/addProduct', verifyJWT, verifyAdmin, async (req, res) => {
+      const product = req.body;
+      const result = await newProductCollection.insertOne(product);
+      res.send(result);
+    });
+
+    app.get('/manageProduct', verifyJWT, verifyAdmin, async (req, res) => {
+      const product = await newProductCollection.find().toArray();
+      res.send(product);
+    })
+
   // Get All Orders
     app.get('/orders', async (req, res) => {
       const orderer = req.query.ordererEmail;
