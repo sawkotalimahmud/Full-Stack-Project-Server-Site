@@ -12,20 +12,17 @@ app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kpfwg.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverApi: ServerApiVersion.v1,
-});
+const client = new MongoClient(uri, {useNewUrlParser: true,useUnifiedTopology: true,serverApi: ServerApiVersion.v1,});
 console.log(uri);
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
+  console.log(authHeader);
   if (!authHeader) {
     return res.status(401).send({ message: "UnAuthorized access" });
   }
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+  jwt.verify(token, 'b542a8495a4521643b9f4af74c5301a01e5f4a56b916232f39d3f60c45d29602c8284869e3423e96be4ec654aa16ce2ea53f22d733fa33c8b32d7a7c813a73f6', function (err, decoded) {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
     }
@@ -55,6 +52,37 @@ async function run() {
       }
     };
 
+    // Get All Orders
+    app.get("/orders", async (req, res) => {
+      const orderer = req.query.ordererEmail;
+      const query = { orderer: orderer };
+      const result = await ordersCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Get Orders For Payment
+    app.get('/orders/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: ObjectId(id)};
+      const orders = await ordersCollection.findOne(query);
+      res.send(orders);
+    });
+
+    // Get User Order
+    app.get("/orders/:email", async (req, res) => {
+      const orderer = req.params.email;
+      const query = { ordererEmail: orderer };
+      const result = await ordersCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Post All Orders
+    app.post("/orders", async (req, res) => {
+      const orders = req.body;
+      const result = await ordersCollection.insertOne(orders);
+      res.send(result);
+    });
+
     // Creat Payment Intent API
     app.post('/create-payment-intent', verifyJWT, async(req, res) =>{
       const service = req.body;
@@ -68,6 +96,7 @@ async function run() {
       res.send({clientSecret: paymentIntent.client_secret})
     });
 
+    // Update My Order API After Payment
     app.patch('/orders/:id', verifyJWT, async(req, res) =>{
       const id  = req.params.id;
       const payment = req.body;
@@ -78,11 +107,10 @@ async function run() {
           transactionId: payment.transactionId
         }
       }
-
       const result = await paymentCollection.insertOne(payment);
       const updatedOrders = await ordersCollection.updateOne(filter, updatedDoc);
       res.send(updatedOrders);
-    })
+    });
 
     // All Products Api
     app.get("/products", async (req, res) => {
@@ -160,36 +188,7 @@ async function run() {
       res.send(result);
     });
 
-    // Get All Orders
-    app.get("/orders", async (req, res) => {
-      const orderer = req.query.ordererEmail;
-      const query = { orderer: orderer };
-      const result = await ordersCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    // Get Orders For Payment
-    app.get('/orders/:id', verifyJWT, async (req, res) => {
-      const id = req.params.id;
-      const query = {_id: ObjectId(id)};
-      const orders = await ordersCollection.findOne(query);
-      res.send(orders);
-    });
-
-    // Get User Order
-    app.get("/orders/:email", async (req, res) => {
-      const orderer = req.params.email;
-      const query = { ordererEmail: orderer };
-      const result = await ordersCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    // Post All Orders
-    app.post("/orders", async (req, res) => {
-      const orders = req.body;
-      const result = await ordersCollection.insertOne(orders);
-      res.send(result);
-    });
+    
   } finally {
   }
 }
