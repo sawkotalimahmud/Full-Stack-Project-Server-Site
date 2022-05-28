@@ -111,9 +111,18 @@ async function run (){
       res.send(result);
     });
 
+    // Manage Product API
     app.get('/manageProduct', verifyJWT, verifyAdmin, async (req, res) => {
       const product = await newProductCollection.find().toArray();
       res.send(product);
+    });
+
+    // Delete Product API
+    app.delete('/product/:email', verifyJWT, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const result = await newProductCollection.deleteOne(filter);
+      res.send(result);
     })
 
   // Get All Orders
